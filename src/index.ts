@@ -4,8 +4,8 @@ const PORT = Number(Bun.env.PORT);
 
 Bun.serve({
 	fetch: server.fetch,
-	port: PORT,
 	hostname: '0.0.0.0',
+	port: PORT,
 });
 
 console.info(`🚀🚀🚀 Server running: http://localhost:${PORT}/ 🚀🚀🚀`);

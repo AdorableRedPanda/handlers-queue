@@ -1,6 +1,7 @@
 import { Hono } from 'hono';
-import { ping } from './ping';
+
 import { handle } from './handle';
+import { ping } from './ping';
 
 const server = new Hono();
 
