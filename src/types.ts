@@ -1,10 +1,21 @@
-type EventType = 'entry' | 'terminal';
+export type BaseTask = Executable & Loggable;
 
-export interface BaseEvent {
-	type: EventType;
+export interface Executable {
+	execute: (
+		queue: Pushable,
+		http: HttpClient,
+		onClose: (v: any) => void,
+	) => Promise<void>;
 }
 
-export interface EntryEvent extends BaseEvent {
-	type: 'entry';
-	payload: string;
+export interface Loggable {
+	toLogger: () => Record<string, any>;
+}
+
+export interface Pushable {
+	push: (...items: any[]) => void;
+}
+
+interface HttpClient {
+	get: (url: string, options?: any) => Promise<any>;
 }
