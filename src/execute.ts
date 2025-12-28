@@ -1,25 +1,50 @@
-import type {BaseTask, Loggable} from '@/types';
-import { createQueue } from "@/createQueue";
+import type {
+	GeneralResponse,
+	Loggable,
+	OnExecute,
+	TasksQueueItem,
+} from '@/types';
 
-import { EntryTask } from '@/tasks';
+import { createQueue } from '@/createQueue';
+
+const TIMEOUT = 2 * 60 * 1000;
 
 export const execute = async (
-    input: string,
-    onLog: (t: Loggable) => void,
+	entry: TasksQueueItem,
+	onLog: (t: Loggable) => Promise<void>,
 ) => {
-	const queue = createQueue<BaseTask>([new EntryTask(input)]);
+	const queue = createQueue<TasksQueueItem>([entry]);
+	const startTime = Date.now();
 
-    let resolve;
+	let resolve: (data: GeneralResponse) => void;
+	const promise = new Promise((r) => {
+		resolve = r;
+	});
 
-    const promise = new Promise((r) => {resolve = r;})
+	const onExecute: OnExecute = (result) => {
+		switch (result.type) {
+			case 'complete':
+				resolve(result.data);
+				return;
+
+			case 'enqueue':
+				queue.push(...result.data);
+				return;
+		}
+	};
 
 	for await (const task of queue) {
-        onLog(task);
+		await onLog(task);
+		const now = Date.now();
 
-		await task.execute(queue, { get: () => null }, resolve);
+		if (now - startTime > TIMEOUT) {
+			throw new Error('Execution timeout');
+		}
+
+		await task.execute(onExecute);
 	}
 
 	console.log('All tasks done');
 
-    return promise;
+	return promise;
 };

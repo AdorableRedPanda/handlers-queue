@@ -1,15 +1,28 @@
 import type { Context } from 'hono';
-import { execute } from "@/execute";
-import { Loggable } from "@/types";
+
+import type { Loggable } from '@/types';
+
+import { buildId } from '@/buildId';
+import { execute } from '@/execute';
+import { EntryTask } from '@/tasks';
+import { wait } from '@/wait';
 
 export const handle = async (c: Context) => {
+	const input = c.req.query('input') || 'not specified';
+	const requestId = buildId();
 
-    const input = c.req.query('input');
-    const onLog = (task: Loggable) => {
-        console.log(task.toLogger());
-    }
+	const entry = new EntryTask(input, requestId);
 
-    const result = await execute(input, onLog);
+	const onLog = async (task: Loggable) => {
+		await wait(1);
+		console.log(task.toLogger());
+	};
 
-    return c.json(result);
-}
+	try {
+		const result = await execute(entry, onLog);
+
+		return c.json(result);
+	} catch (error) {
+		return c.json({ error: (error as Error).message }, 500);
+	}
+};

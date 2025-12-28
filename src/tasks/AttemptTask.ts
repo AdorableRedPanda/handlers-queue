@@ -1,4 +1,4 @@
-import type { Executable, Pushable } from '@/types';
+import type { ID, OnExecute } from '@/types';
 
 import { LoggableTask } from '@/tasks/LoggableTask';
 import { TerminalTask } from '@/tasks/TerminalTask';
@@ -8,24 +8,29 @@ interface AttemptPayload {
 	attempt: number;
 }
 
-export class AttemptTask
-	extends LoggableTask<AttemptPayload>
-	implements Executable
-{
-	constructor(payload: AttemptPayload) {
-		super(payload, 'attempt');
+export class AttemptTask extends LoggableTask<AttemptPayload> {
+	constructor(requestId: ID, payload: AttemptPayload) {
+		super(requestId, 'attempt', payload);
 	}
 
-	async execute(queue: Pushable) {
+	async execute(onExecute: OnExecute) {
 		if (this.payload.attempt >= 3) {
-			queue.push(
-				new TerminalTask({
-					message: `Attempt ${this.payload.attempt} reached.`,
-				}),
-			);
-            return;
+			onExecute({
+				data: [
+					new TerminalTask(this.requestId, {
+						message: `Attempt ${this.payload.attempt} reached.`,
+					}),
+				],
+				type: 'enqueue',
+			});
+			return;
 		}
 		await wait(500 * this.payload.attempt);
-		queue.push(new AttemptTask({ attempt: this.payload.attempt + 1 }));
+		onExecute({
+			data: [
+				new AttemptTask(this.requestId, { attempt: this.payload.attempt + 1 }),
+			],
+			type: 'enqueue',
+		});
 	}
 }

@@ -1,4 +1,4 @@
-import type { Executable } from '@/types';
+import type { ID, OnExecute } from '@/types';
 
 import { LoggableTask } from './LoggableTask';
 
@@ -6,15 +6,12 @@ interface TerminalPayload {
 	message: string;
 }
 
-export class TerminalTask
-	extends LoggableTask<TerminalPayload>
-	implements Executable
-{
-	constructor(payload: TerminalPayload) {
-		super(payload, 'terminal');
+export class TerminalTask extends LoggableTask<TerminalPayload> {
+	constructor(requestId: ID, payload: TerminalPayload) {
+		super(requestId, 'terminal', payload);
 	}
 
-	async execute(_, __, onClose ) {
-        onClose(this.payload);
+	async execute(onExecute: OnExecute) {
+		onExecute({ data: this.payload, type: 'complete' });
 	}
 }

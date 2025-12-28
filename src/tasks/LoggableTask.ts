@@ -1,19 +1,27 @@
-import type { Loggable } from '@/types';
+import type { ID, Loggable, TaskType } from '@/types';
 
-export class LoggableTask<TPayload> implements Loggable {
-	constructor(
+import { BaseTask } from '@/tasks/BaseTask';
+
+export abstract class LoggableTask<TPayload>
+	extends BaseTask
+	implements Loggable
+{
+	protected constructor(
+		requestId: ID,
+		type: TaskType,
 		protected payload: TPayload,
-		private type: string,
 		private createdAt = new Date(),
-        private id = crypto.randomUUID().slice(0, 6)
-	) {}
+	) {
+		super(requestId, type, payload);
+	}
 
 	public toLogger() {
 		return {
 			createdAt: this.createdAt.toISOString(),
 			logged: new Date().toISOString(),
+			payload: this.payload,
+			requestId: this.requestId,
 			type: this.type,
-            id: this.id,
 		};
 	}
 }
