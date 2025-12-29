@@ -3,7 +3,7 @@ export function createQueue<TItem>(initial: TItem[]) {
 
 	function* iterator() {
 		while (queue.length > 0) {
-			yield queue.shift()!;
+			yield queue.shift() as TItem;
 		}
 	}
 

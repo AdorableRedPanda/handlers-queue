@@ -1,23 +1,28 @@
+import type { BaseTask } from '@/tasks/BaseTask';
+
+export type DateString = string;
+
 export interface Executable {
-	execute: (onExecute: OnExecute) => Promise<void>;
+	execute: () => Promise<ExecuteResult>;
 }
 
+export type ExecuteResult<TPayload extends object = object> =
+	| { data: BaseTask<TPayload>[]; type: 'enqueue' }
+	| { data: GeneralResponse; type: 'complete' };
 export interface GeneralResponse {
 	message: string;
 }
 
 export type ID = string;
 
-export interface Loggable {
-	toLogger: () => Record<string, any>;
+export type LogDto = string;
+
+export interface TaskDto<TPayload> {
+	createdAt: DateString;
+	payload: TPayload;
+	projectId: ID;
+	requestId: ID;
+	type: TaskType;
 }
 
-export type TasksQueueItem = Executable & Loggable;
-
 export type TaskType = 'attempt' | 'entry' | 'terminal';
-
-export type OnExecute = (arg: ExecuteResult) => void;
-
-type ExecuteResult =
-	| { data: GeneralResponse; type: 'complete' }
-	| { data: TasksQueueItem[]; type: 'enqueue' };

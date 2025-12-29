@@ -1,17 +1,17 @@
-import type { ID, OnExecute } from '@/types';
+import type { ExecuteResult } from '@/types';
 
-import { LoggableTask } from './LoggableTask';
+import { BaseTask } from '@/tasks/BaseTask';
 
 interface TerminalPayload {
 	message: string;
 }
 
-export class TerminalTask extends LoggableTask<TerminalPayload> {
-	constructor(requestId: ID, payload: TerminalPayload) {
-		super(requestId, 'terminal', payload);
+export class TerminalTask extends BaseTask<TerminalPayload> {
+	constructor(payload: TerminalPayload, parent: BaseTask) {
+		super(payload, 'terminal', parent);
 	}
 
-	async execute(onExecute: OnExecute) {
-		onExecute({ data: this.payload, type: 'complete' });
+	async execute(): Promise<ExecuteResult> {
+		return { data: this.payload, type: 'complete' };
 	}
 }
