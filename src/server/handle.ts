@@ -8,12 +8,12 @@ import { EntryTask } from '@/tasks';
 
 export const handle = async (c: Context) => {
 	const input = c.req.query('input') || 'not specified';
-	const attempts = Number.parseInt(c.req.query('attempts') || '10');
+	const attempts = Number.parseInt(c.req.query('attempts') || '10', 10);
 
 	const projectId = buildId();
 	const requestId = buildId();
 
-	const entry = new EntryTask({ input, attempts }, requestId, projectId);
+	const entry = new EntryTask({ attempts, input }, requestId, projectId);
 
 	const onLog = async (log: LogDto) => {
 		await wait(1);
