@@ -17,7 +17,7 @@ export const execute = async (
 		const result = await task.execute();
 
 		if (result.type === 'enqueue') {
-			queue.push(...(result.data as BaseTask[]));
+			queue.push(...result.data);
 		}
 
 		if (result.type === 'complete') {
